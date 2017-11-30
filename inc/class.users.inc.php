@@ -27,13 +27,11 @@ class SiteUsers
      */
 	public function createAccount($user,$pass)
 	{
-		$sql = "INSERT INTO users (Username, Password)
-                    VALUES ($user, $pass)";
+		$sql = "INSERT INTO users (ID,Username, Password)
+                    VALUES (0, $user, $pass)";
 		try
         {
             $stmt = $this->_db->prepare($sql);
-            $stmt->bindParam(':user', $_POST['username'], PDO::PARAM_STR);
-            $stmt->bindParam(':pass', $_POST['password'], PDO::PARAM_STR);
             $stmt->execute();
 			return $stmt;
         }
@@ -43,29 +41,36 @@ class SiteUsers
         }
 	}
 	
-	public function logInAccount(){
+	/**
+     * Function to check if log in credentials are valid
+     *
+     * @return boolean
+     */
+	public function logInAccount($user,$passw){
 		 $sql = "SELECT Username
                 FROM users
                 WHERE Username=:user
                 AND Password=MD5(:pass)
                 LIMIT 1";
-		 
-		$stmt = $this->_db->prepare($sql);
-		$stmt->bindParam(':user', $_POST['username'], PDO::PARAM_STR);
-		$stmt->bindParam(':pass', $_POST['password'], PDO::PARAM_STR);
-		$stmt->execute();		
+		try
+        {
+            $stmt = $this->_db->prepare($sql);
+            $stmt->execute();
+            if($stmt->rowCount()==1)
+            {
+                $_SESSION['Username'] = htmlentities($_POST['username'], ENT_QUOTES);
+                $_SESSION['LoggedIn'] = 1;
+                return TRUE;
+            }
+            else
+            {
+                return FALSE;
+            }
+        }
+        catch(PDOException $e)
+        {
+            return FALSE;
+        }	
 	}
-	
-	public function changeEmail(){
-		
-	}
-	
-	public function changePassword(){
-		
-	}
-	
-	public function forgotPassword(){
-		
-	}	
 }
 ?>
